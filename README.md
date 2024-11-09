@@ -93,8 +93,8 @@ If you encounter BLAS/LAPACK related errors, you may need to explicitly choose a
 are configured per platform in the Cargo.toml:
 
 - macOS: Accelerate Framework
-- Windows: Intel MKL
-- Linux: OpenBLAS
+- Windows: system provided Intel MKL
+- Linux: system provided OpenBLAS
 
 To use a different backend, modify `Cargo.toml` and change the pacmap dependency to specify your preferred backend.
 Available features are:
