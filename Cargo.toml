@@ -2,6 +2,13 @@
 name = "pacmap-rs-example"
 version = "0.1.0"
 edition = "2021"
+authors = ["Joshua Griffith <joshua@beamform.io>"]
+description = "A simple example demonstrating how to use PaCMAP dimensionality reduction in Rust"
+repository = "https://github.com/beamform/pacmap-rs-example"
+license = "Apache-2.0"
+keywords = ["embedding", "dimension-reduction", "pacmap", "algorithms"]
+categories = ["science", "algorithms", "mathematics"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0"
