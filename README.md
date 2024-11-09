@@ -111,6 +111,7 @@ pacmap = { version = "0.1", features = ["openblas-system"] }   # System provided
 # Netlib options:
 pacmap = { version = "0.1", features = ["netlib-static"] }     # Statically linked
 pacmap = { version = "0.1", features = ["netlib-system"] }     # System provided
+```
 
 ## Additional Resources
 
