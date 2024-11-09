@@ -87,6 +87,31 @@ If you encounter any issues:
 2. Verify Rust is installed correctly with `rustc --version`
 3. Try cleaning and rebuilding: `make clean && make build-release`
 
+### BLAS/LAPACK Issues
+
+If you encounter BLAS/LAPACK related errors, you may need to explicitly choose a different backend. The project defaults
+are configured per platform in the Cargo.toml:
+
+- macOS: Accelerate Framework
+- Windows: Intel MKL
+- Linux: OpenBLAS
+
+To use a different backend, modify `Cargo.toml` and change the pacmap dependency to specify your preferred backend.
+Available features are:
+
+```toml
+# Intel MKL options:
+pacmap = { version = "0.1", features = ["intel-mkl-static"] }  # Statically linked
+pacmap = { version = "0.1", features = ["intel-mkl-system"] }  # System provided
+
+# OpenBLAS options:
+pacmap = { version = "0.1", features = ["openblas-static"] }   # Statically linked
+pacmap = { version = "0.1", features = ["openblas-system"] }   # System provided
+
+# Netlib options:
+pacmap = { version = "0.1", features = ["netlib-static"] }     # Statically linked
+pacmap = { version = "0.1", features = ["netlib-system"] }     # System provided
+
 ## Additional Resources
 
 - [Rust PaCMAP Documentation](https://docs.rs/pacmap)
