@@ -95,3 +95,7 @@ If you encounter any issues:
 - [Rust Programming Language](https://www.rust-lang.org/)
 - [Rust Book](https://rust-book.cs.brown.edu/title-page.html)
 - [Cargo Book](https://doc.rust-lang.org/cargo/)
+
+## License
+
+Apache License, Version 2.0
