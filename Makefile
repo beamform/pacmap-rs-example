@@ -11,6 +11,9 @@ help:
 	@echo "  make build-release - Build the project in release mode"
 	@echo "  make run           - Run the project in release mode"
 	@echo "  make clean         - Remove build artifacts"
+	@echo "  make docker-build  - Build Docker image"
+	@echo "  make docker-run    - Run Docker container"
+	@echo "  make docker-clean  - Remove Docker image"
 
 # Install Rust toolchain
 .PHONY: install
@@ -42,3 +45,29 @@ run:
 clean:
 	@echo "Cleaning build artifacts..."
 	cargo clean
+
+# Docker image name
+DOCKER_IMAGE := pacmap-rs-example
+DOCKER_TAG := latest
+
+# Build Docker image
+.PHONY: docker-build
+docker-build:
+	@echo "Building Docker image..."
+	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
+
+# Run Docker container
+.PHONY: docker-run
+docker-run:
+	@echo "Running Docker container..."
+	docker run --rm -v "$(PWD):/home/pacmap" $(DOCKER_IMAGE):$(DOCKER_TAG)
+
+# Clean Docker image
+.PHONY: docker-clean
+docker-clean:
+	@echo "Removing Docker image..."
+	docker rmi $(DOCKER_IMAGE):$(DOCKER_TAG)
+
+# All Docker operations
+.PHONY: docker-all
+docker-all: docker-build docker-run

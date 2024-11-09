@@ -55,6 +55,37 @@ make build-release
 make run
 ```
 
+## Running with Docker
+
+If you prefer to run the example using Docker, you don't need to install Rust locally. Simply ensure you have Docker
+installed on your system.
+
+1. Build the Docker image:
+
+```bash
+make docker-build
+```
+
+2. Run the example in a container:
+
+```bash
+make docker-run
+```
+
+Or do both steps at once:
+
+```bash
+make docker-all
+```
+
+The visualization file `pacmap_visualization.html` will be created in your current directory.
+
+To clean up the Docker image when you're done:
+
+```bash
+make docker-clean
+```
+
 ## What the Example Does
 
 When you run the example:
