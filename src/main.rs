@@ -1,55 +1,76 @@
-//! PaCMAP dimensional reduction implemented in Rust
+//! PaCMAP dimensionality reduction example
 //!
-//! This module provides a Rust implementation of the PaCMAP algorithm for
-//! dimensionality reduction and visualization. It demonstrates using PaCMAP to
-//! reduce the USPS digits dataset to 2D and visualize the results.
+//! This example demonstrates using the PaCMAP algorithm to reduce the MNIST digits dataset
+//! from 784 dimensions to 2 dimensions for visualization. It loads the MNIST data, applies
+//! PaCMAP reduction, and creates an interactive scatter plot colored by digit class.
+//!
+//! The example showcases:
+//! - Loading and preprocessing MNIST data
+//! - Configuring and running PaCMAP dimensionality reduction
+//! - Creating interactive visualizations with plotly
 
 use anyhow::{Context, Result};
 use mimalloc::MiMalloc;
-use ndarray::{Array1, Array2, ArrayView2};
-use ndarray_npy::ReadNpyExt;
+use mnist::{Mnist, MnistBuilder};
+use ndarray::{Array1, Array3, ArrayView2};
 use pacmap::Configuration;
-use plotly::common::{Mode, Title};
+use plotly::common::{ColorScale, ColorScalePalette, Marker, Mode, Title};
 use plotly::{Layout, Plot, Scatter};
-use std::io::Cursor;
 use std::time::Instant;
 use tracing::info;
+use ColorScale::Palette;
 
-// Use the MiMalloc allocator globally for better performance
+// Use MiMalloc globally for improved memory allocation performance
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
-// URLs for the USPS digits dataset and labels
-const DATA_URL: &str = "https://raw.githubusercontent.com/YingfanWang/PaCMAP/master/data/USPS.npy";
-const LABELS_URL: &str =
-    "https://raw.githubusercontent.com/YingfanWang/PaCMAP/master/data/USPS_labels.npy";
-
-/// Main entry point that downloads USPS data, runs PaCMAP dimensionality
-/// reduction, and creates an interactive visualization
+/// Run PaCMAP dimensionality reduction on MNIST and create visualization
+///
+/// Loads the MNIST dataset, applies PaCMAP to reduce dimensionality to 2D,
+/// and creates an interactive scatter plot visualization colored by digit class.
 ///
 /// # Errors
 /// Returns an error if:
-/// - Data download fails
-/// - Data parsing fails
+/// - MNIST data loading fails
+/// - Array reshaping operations fail
 /// - PaCMAP embedding fails
 /// - Plot creation fails
 fn main() -> Result<()> {
     // Initialize logging
     tracing_subscriber::fmt::init();
 
-    // Download and load data directly into memory
-    info!("Downloading and loading data...");
-    let x = download_and_load_array2(DATA_URL)?;
+    // Load and combine training and test MNIST data
+    info!("Loading MNIST dataset...");
+    let Mnist {
+        mut trn_img,
+        mut trn_lbl,
+        mut tst_img,
+        mut tst_lbl,
+        ..
+    } = MnistBuilder::new()
+        .base_url("https://ossci-datasets.s3.amazonaws.com/mnist/")
+        .label_format_digit()
+        .download_and_extract()
+        .training_set_length(60_000)
+        .test_set_length(10_000)
+        .finalize();
 
-    // Flatten the array to (n_samples, n_features)
-    let n_samples = x.shape()[0];
-    let n_features: usize = x.shape()[1..].iter().product();
-    let x = x.to_shape::<(usize, usize)>((n_samples, n_features))?;
+    trn_img.append(&mut tst_img);
 
-    info!("Downloading and loading labels...");
-    let labels = download_and_load_array1(LABELS_URL)?;
+    // Normalize pixel values to [0,1] and reshape to (n_samples, n_features)
+    let x = Array3::from_shape_vec((70_000, 28, 28), trn_img)
+        .context("Error converting images to Array3")?
+        .map(|x| *x as f32 / 255.0);
 
-    // Configure PaCMAP with empirically optimal parameters
+    // Reshape to (n_samples, n_features)
+    let x = x.into_shape_with_order((70_000, 784))?;
+
+    trn_lbl.append(&mut tst_lbl);
+
+    // Convert labels to Array1
+    let labels = Array1::from_vec(trn_lbl).mapv(|x| x as i32);
+
+    // Configure PaCMAP with empirically optimal parameters for MNIST
     let config = Configuration::builder()
         .embedding_dimensions(2)
         .override_neighbors(10)
@@ -57,8 +78,8 @@ fn main() -> Result<()> {
         .far_pair_ratio(2.0)
         .build();
 
-    // Run PaCMAP dimensionality reduction
-    info!("Running PaCMAP on x with shape {:?}...", x.shape());
+    // Run PaCMAP reduction and time it
+    info!("Running PaCMAP on MNIST with shape {:?}...", x.shape());
     let start = Instant::now();
     let (embedding, _) = pacmap::fit_transform(x.view(), config)?;
     let duration = Instant::now().duration_since(start);
@@ -68,9 +89,9 @@ fn main() -> Result<()> {
     let scatter = create_scatter_plot(embedding.view(), &labels)?;
 
     let layout = Layout::new()
-        .title(Title::with_text("PaCMAP Embedding"))
-        .width(600)
-        .height(600);
+        .title(Title::with_text("PaCMAP Embedding of MNIST"))
+        .width(800)
+        .height(800);
 
     info!("Saving visualization...");
     let mut plot = Plot::new();
@@ -82,14 +103,17 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// Creates an interactive scatter plot from embedding coordinates and labels
+/// Creates an interactive scatter plot of the embedding coordinates
+///
+/// Creates a plotly scatter plot with points colored by their digit class,
+/// using the Portland color palette for visual distinction between classes.
 ///
 /// # Arguments
-/// * `embedding` - 2D array containing embedded coordinates
-/// * `labels` - 1D array of integer labels for each point
+/// * `embedding` - 2D array of shape (n_samples, 2) containing embedded coordinates
+/// * `labels` - 1D array of shape (n_samples,) containing digit labels (0-9)
 ///
 /// # Errors
-/// Returns error if scatter plot creation fails
+/// Returns an error if scatter plot creation fails
 fn create_scatter_plot(
     embedding: ArrayView2<f32>,
     labels: &Array1<i32>,
@@ -97,65 +121,14 @@ fn create_scatter_plot(
     let x = embedding.column(0).to_vec();
     let y = embedding.column(1).to_vec();
 
-    // Create scatter plot with points colored by label
+    // Create scatter with digit class coloring
     let scatter = Scatter::new(x, y).mode(Mode::Markers).marker(
-        plotly::common::Marker::new()
+        Marker::new()
             .color_array(labels.to_vec())
             .show_scale(true)
+            .color_scale(Palette(ColorScalePalette::Portland))
             .size(2),
     );
 
     Ok(scatter)
-}
-
-/// Downloads and parses a 2D numpy array from a URL
-///
-/// # Arguments
-/// * `url` - URL of the .npy file to download
-///
-/// # Errors
-/// Returns error if:
-/// - Download fails
-/// - Byte parsing fails
-/// - NPY parsing fails
-fn download_and_load_array2(url: &str) -> Result<Array2<f32>> {
-    let response =
-        reqwest::blocking::get(url).with_context(|| format!("Failed to download from {}", url))?;
-
-    let bytes = response
-        .bytes()
-        .with_context(|| format!("Failed to read bytes from {}", url))?;
-
-    // Read NPY data from memory
-    let reader = Cursor::new(&bytes[..]);
-    let array = Array2::<f32>::read_npy(reader)
-        .with_context(|| format!("Failed to parse NPY data from {}", url))?;
-
-    Ok(array)
-}
-
-/// Downloads and parses a 1D numpy array from a URL
-///
-/// # Arguments
-/// * `url` - URL of the .npy file to download
-///
-/// # Errors
-/// Returns error if:
-/// - Download fails
-/// - Byte parsing fails
-/// - NPY parsing fails
-fn download_and_load_array1(url: &str) -> Result<Array1<i32>> {
-    let response =
-        reqwest::blocking::get(url).with_context(|| format!("Failed to download from {}", url))?;
-
-    let bytes = response
-        .bytes()
-        .with_context(|| format!("Failed to read bytes from {}", url))?;
-
-    // Read NPY data from memory
-    let reader = Cursor::new(&bytes[..]);
-    let array = Array1::<i32>::read_npy(reader)
-        .with_context(|| format!("Failed to parse NPY data from {}", url))?;
-
-    Ok(array)
 }

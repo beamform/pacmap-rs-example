@@ -13,24 +13,23 @@ readme = "README.md"
 [dependencies]
 anyhow = "1.0"
 mimalloc = "0.1"
+mnist = { version = "0.6", features = ["download"] }
 ndarray = "0.16"
-ndarray-npy = "0.9"
 plotly = { version = "0.10", features = ["plotly_ndarray"] }
-reqwest = { version = "0.12", features = ["blocking"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
 # macOS: Use native Accelerate Framework
 [target.'cfg(target_os = "macos")'.dependencies]
-pacmap = "0.1"
+pacmap = "0.2"
 
 # Windows: Use Intel MKL (more reliable on Windows)
 [target.'cfg(target_os = "windows")'.dependencies]
-pacmap = { version = "0.1", features = ["intel-mkl-system"] }
+pacmap = { version = "0.2", features = ["intel-mkl-system"] }
 
 # Linux: Use OpenBLAS
 [target.'cfg(target_os = "linux")'.dependencies]
-pacmap = { version = "0.1", features = ["openblas-system"] }
+pacmap = { version = "0.2", features = ["openblas-system"] }
 
 [profile.release]
 codegen-units = 1
