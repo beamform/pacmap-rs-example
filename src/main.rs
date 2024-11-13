@@ -70,7 +70,7 @@ fn main() -> Result<()> {
     // Convert labels to Array1
     let labels = Array1::from_vec(trn_lbl).mapv(|x| x as i32);
 
-    // Configure PaCMAP with empirically optimal parameters for MNIST
+    // Configure PaCMAP with standard parameters
     let config = Configuration::builder()
         .embedding_dimensions(2)
         .override_neighbors(10)
