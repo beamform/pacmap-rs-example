@@ -1,8 +1,8 @@
 # PaCMAP Rust Example
 
 This repository contains an example of using the Rust implementation of PaCMAP (Pairwise Controlled Manifold
-Approximation), a dimensionality reduction and visualization algorithm. This example demonstrates how to reduce the MNIST
-digits dataset from 784 dimensions to 2D and create an interactive visualization.
+Approximation), a dimensionality reduction and visualization algorithm. This example demonstrates how to reduce the
+MNIST digits dataset from 784 dimensions to 2D and create an interactive visualization.
 
 ## Prerequisites
 
@@ -13,12 +13,26 @@ You'll need:
 - An internet connection (for downloading Rust and the MNIST dataset)
 - Basic familiarity with command line operations
 
-### Important: GCC 13 Requirement
+### Important: GCC 13+ Requirement
 
-This project requires GCC 13 or later due to dependency requirements. On Debian/Ubuntu, you can install it with:
+This project requires GCC 13+ or later due to dependency requirements. For Ubuntu, upgrade to 24.04. On Debian:
 
 ```bash
+# Add testing repo
+echo "deb http://deb.debian.org/debian testing main" | sudo tee /etc/apt/sources.list.d/testing.list
+sudo apt-get update
+
+# Install GCC 13
 sudo apt-get install gcc-13 g++-13
+
+# Set as default compiler
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 \
+  --slave /usr/bin/g++ g++ /usr/bin/g++-13 \
+  --slave /usr/bin/gcov gcov /usr/bin/gcov-13
+
+# Set environment variables
+export CC=/usr/bin/gcc-13
+export CXX=/usr/bin/g++-13
 ```
 
 On other distributions, please consult your package manager's documentation.
@@ -68,7 +82,8 @@ make run
 
 ## Running with Docker
 
-If you prefer to run the example using Docker, you don't need to install Rust or GCC locally. Simply ensure you have Docker
+If you prefer to run the example using Docker, you don't need to install Rust or GCC locally. Simply ensure you have
+Docker
 installed on your system.
 
 1. Build the Docker image:
