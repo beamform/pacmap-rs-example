@@ -15,7 +15,7 @@ You'll need:
 
 ### Important: GCC 13+ Requirement
 
-This project requires GCC 13+ or later due to dependency requirements. For Ubuntu, upgrade to 24.04. On Debian:
+This project requires GCC 13 or later due to dependency requirements. For Ubuntu, upgrade to 24.04. On Debian:
 
 ```bash
 # Add testing repo

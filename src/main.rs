@@ -36,6 +36,10 @@ static GLOBAL: MiMalloc = MiMalloc;
 /// - PaCMAP embedding fails
 /// - Plot creation fails
 fn main() -> Result<()> {
+    const TRAINING_SET_SIZE: u32 = 60_000;
+    const TEST_SET_SIZE: u32 = 10_000;
+    const TOTAL_SIZE: usize = TRAINING_SET_SIZE as usize + TEST_SET_SIZE as usize;
+
     // Initialize logging
     tracing_subscriber::fmt::init();
 
@@ -51,19 +55,19 @@ fn main() -> Result<()> {
         .base_url("https://ossci-datasets.s3.amazonaws.com/mnist/")
         .label_format_digit()
         .download_and_extract()
-        .training_set_length(60_000)
-        .test_set_length(10_000)
+        .training_set_length(TRAINING_SET_SIZE)
+        .test_set_length(TEST_SET_SIZE)
         .finalize();
 
     trn_img.append(&mut tst_img);
 
     // Normalize pixel values to [0,1] and reshape to (n_samples, n_features)
-    let x = Array3::from_shape_vec((70_000, 28, 28), trn_img)
+    let x = Array3::from_shape_vec((TOTAL_SIZE, 28, 28), trn_img)
         .context("Error converting images to Array3")?
         .map(|x| *x as f32 / 255.0);
 
     // Reshape to (n_samples, n_features)
-    let x = x.into_shape_with_order((70_000, 784))?;
+    let x = x.into_shape_with_order((TOTAL_SIZE, 784))?;
 
     trn_lbl.append(&mut tst_lbl);
 
