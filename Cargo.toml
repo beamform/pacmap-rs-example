@@ -21,15 +21,15 @@ tracing-subscriber = "0.3"
 
 # macOS: Use native Accelerate Framework
 [target.'cfg(target_os = "macos")'.dependencies]
-pacmap = { version = "0.2.3", features = ["simsimd"] }
+pacmap = { version = "0.2.4", features = ["simsimd"] }
 
 # Windows: Use Intel MKL (more reliable on Windows)
 [target.'cfg(target_os = "windows")'.dependencies]
-pacmap = { version = "0.2.3", features = ["intel-mkl-system", "simsimd"] }
+pacmap = { version = "0.2.4", features = ["intel-mkl-system", "simsimd"] }
 
 # Linux: Use OpenBLAS
 [target.'cfg(target_os = "linux")'.dependencies]
-pacmap = { version = "0.2.3", features = ["openblas-system", "simsimd"] }
+pacmap = { version = "0.2.4", features = ["openblas-system", "simsimd"] }
 
 [profile.release]
 codegen-units = 1
