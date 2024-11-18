@@ -1273,9 +1273,9 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "pacmap"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "febb4b7068708cd41b8311dda598c0f0697fe22623cb1c3340861f8a4fd8584d"
+checksum = "5189c4d9174644d2f150a101d9a18b7460ffa1cbf39137570ff119485962e663"
 dependencies = [
  "bon",
  "ndarray",
